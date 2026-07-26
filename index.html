@@ -132,7 +132,7 @@
 
 <iframe
     id="appFrame"
-    src="https://script.google.com/a/macros/ufma.br/s/AKfycbwNIAi0c7v3TOduuB2Ssxi5-bQaynATYrx86ikAnYWMdvCKaMCSCvpkkvTy53LqtbgK/exec"
+    src="https://script.google.com/a/macros/ufma.br/s/AKfycbzGq7KaWJC_53M1Gy1mhH6KLGQKm9DZw0kSn5fLmF8me24q-RxwG23Ft9gaVE9fFcg1/exec"
     loading="eager">
 </iframe>
 
@@ -149,7 +149,9 @@
         loading.classList.add("fade-out");
 
         setTimeout(() => {
-            loading.remove();
+            if(loading.parentNode) {
+                loading.remove();
+            }
         }, 500);
     }
 
