@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciamento de Módulos e Planos</title>
-    <link rel="icon" href="https://drive.google.com/uc?export=view&id=12fTbnSdtjJr_KyGE0q12hJSq7Z2u4_2U" type="image/png">
-    
 
     <style>
         * {
@@ -22,19 +20,86 @@
             background: #f5f5f5;
         }
 
+        /* Tela de loading */
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity .4s ease;
+        }
+
+        #loading.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e5e7eb;
+            border-top: 6px solid #1976d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #444;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         iframe {
             width: 100%;
             height: 100vh;
             border: none;
+            display: block;
         }
     </style>
 </head>
 <body>
 
+    <div id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Carregando sistema...</div>
+    </div>
+
     <iframe
+        id="appFrame"
         src="https://script.google.com/macros/s/AKfycbwNIAi0c7v3TOduuB2Ssxi5-bQaynATYrx86ikAnYWMdvCKaMCSCvpkkvTy53LqtbgK/exec"
-        loading="lazy">
+        loading="eager">
     </iframe>
+
+    <script>
+        const frame = document.getElementById("appFrame");
+        const loading = document.getElementById("loading");
+
+        frame.addEventListener("load", () => {
+            loading.classList.add("fade-out");
+
+            setTimeout(() => {
+                loading.style.display = "none";
+            }, 400);
+        });
+
+        // Evita que o loading fique preso caso ocorra algum problema
+        setTimeout(() => {
+            loading.classList.add("fade-out");
+            setTimeout(() => {
+                loading.style.display = "none";
+            }, 400);
+        }, 15000);
+    </script>
 
 </body>
 </html>
