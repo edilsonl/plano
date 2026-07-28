@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
     <title>Gerenciamento de Módulos e Planos</title>
     <link rel="shortcut icon" href="https://avaprogep.ufma.br/pluginfile.php/1/core_admin/favicon/64x64/1784758307/PNG%20-%20Logo%20UFMA%20colorido%20%282%29.png" />
 
@@ -21,6 +22,11 @@
             background: #f8fafc;
         }
 
+        body {
+            position: fixed;
+            inset: 0;
+        }
+
         iframe {
             display: block;
             width: 100vw;
@@ -28,8 +34,8 @@
             border: 0;
         }
 
-        /* Container Principal do Loading/Erro */
-        #loading-overlay {
+        /* Loading Overlay Moderno */
+        #loading {
             position: fixed;
             inset: 0;
             width: 100vw;
@@ -40,31 +46,31 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #loading-overlay.fade-out {
+        #loading.fade-out {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* Estilo base dos Cards */
-        .card {
+        .loading-card {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 2.5rem 3rem;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 1.25rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.8);
             text-align: center;
             max-width: 90%;
-            width: 400px;
+            width: 420px;
         }
 
-        /* Spinner */
+        /* Spinner Duplo Elegante */
         .spinner-container {
             position: relative;
             width: 60px;
@@ -90,79 +96,68 @@
             animation: spin-reverse 0.7s linear infinite;
         }
 
-        /* Textos */
-        .title {
+        .loading-text {
             margin-top: 1.25rem;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #1e293b;
             font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
-        .subtitle {
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
+        .loading-subtext {
+            margin-top: 0.3rem;
+            font-size: 0.825rem;
             color: #64748b;
             line-height: 1.4;
         }
 
-        /* Estado de Erro / Acesso Negado */
-        #error-card {
-            display: none;
-            border-color: #fecaca;
-            box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.1);
-        }
-
-        #error-card .title { color: #dc2626; }
-        
-        .error-icon {
-            width: 64px;
-            height: 64px;
-            color: #ef4444;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-action {
-            margin-top: 1.5rem;
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+        /* Link de escape caso ocorra o bloqueio do X-Frame-Options */
+        .fallback-container {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
             width: 100%;
         }
 
-        .btn-action:hover { background: #1d4ed8; }
+        .fallback-link {
+            font-size: 0.8rem;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
 
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+        .fallback-link:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
     </style>
 </head>
+
 <body>
 
-<div id="loading-overlay">
-    <!-- Card de Carregamento -->
-    <div class="card" id="loading-card">
+<div id="loading">
+    <div class="loading-card">
         <div class="spinner-container">
             <div class="spinner"></div>
         </div>
-        <div class="title">Carregando sistema</div>
-        <div class="subtitle">Isso pode levar alguns segundos...</div>
-    </div>
-
-    <!-- Card de Acesso Negado -->
-    <div class="card" id="error-card">
-        <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-        </svg>
-        <div class="title">Acesso Negado ou Bloqueado</div>
-        <div class="subtitle">Parece que você não tem permissão para acessar este sistema, ou precisa fazer login com sua conta UFMA.</div>
-        <a href="https://script.google.com/a/macros/ufma.br/s/AKfycby0mDryV6jk-Fa8o28976mu6S6hM9do7xICgoBjwLNvPPCIAg8nqH8hA4xDfZMOXpuj/exec" target="_blank" class="btn-action">
-            Fazer Login / Solicitar Acesso
-        </a>
+        <div class="loading-text">Carregando sistema</div>
+        <div class="loading-subtext">Isso pode levar alguns segundos na primeira inicialização...</div>
+        
+        <div class="fallback-container">
+            <div class="loading-subtext" style="margin-bottom: 6px;">Se a tela não carregar ou bloquear:</div>
+            <a href="https://script.google.com/a/macros/ufma.br/s/AKfycby0mDryV6jk-Fa8o28976mu6S6hM9do7xICgoBjwLNvPPCIAg8nqH8hA4xDfZMOXpuj/exec" target="_blank" class="fallback-link">
+                Abrir sistema diretamente em nova aba &rarr;
+            </a>
+        </div>
     </div>
 </div>
 
@@ -174,53 +169,28 @@
 
 <script>
     const frame = document.getElementById("appFrame");
-    const overlay = document.getElementById("loading-overlay");
-    const loadingCard = document.getElementById("loading-card");
-    const errorCard = document.getElementById("error-card");
+    const loading = document.getElementById("loading");
 
-    let isAppLoaded = false;
-    let timeoutId;
+    let loadingHidden = false;
 
-    // 1. Escuta a confirmação vinda do Google Apps Script
-    window.addEventListener("message", (event) => {
-        // Verifica se a mensagem é a nossa confirmação de sucesso
-        if (event.data === "APP_LOADED_SUCCESS") {
-            isAppLoaded = true;
-            hideOverlay();
-        }
-    });
+    function hideLoading() {
+        if (loadingHidden) return;
 
-    // 2. Quando o iframe termina de carregar (seja com sucesso ou com tela de erro do Google)
-    frame.addEventListener("load", () => {
-        // Damos 2 segundos de tolerância para o postMessage chegar. 
-        // Se não chegar, significa que o Google bloqueou a tela (Acesso Negado)
+        loadingHidden = true;
+        loading.classList.add("fade-out");
+
         setTimeout(() => {
-            if (!isAppLoaded) {
-                showAccessDenied();
+            if(loading.parentNode) {
+                loading.remove();
             }
-        }, 2000);
-    });
-
-    // 3. Fallback de segurança: se demorar mais de 15s no total, mostra erro de conexão
-    timeoutId = setTimeout(() => {
-        if (!isAppLoaded) {
-            showAccessDenied();
-        }
-    }, 15000);
-
-    function hideOverlay() {
-        clearTimeout(timeoutId);
-        overlay.classList.add("fade-out");
-        setTimeout(() => {
-            if(overlay.parentNode) overlay.remove();
         }, 500);
     }
 
-    function showAccessDenied() {
-        clearTimeout(timeoutId);
-        loadingCard.style.display = "none";
-        errorCard.style.display = "flex";
-    }
+    // Oculta o loading assim que o iframe terminar de carregar com sucesso
+    frame.addEventListener("load", hideLoading);
+
+    // Timeout de segurança estendido para evitar falsos travamentos em conexões lentas (25 segundos)
+    setTimeout(hideLoading, 25000);
 </script>
 
 </body>
