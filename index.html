@@ -34,8 +34,8 @@
             border: 0;
         }
 
-        /* Overlay Principal */
-        #loading-overlay {
+        /* Loading Overlay Moderno */
+        #loading {
             position: fixed;
             inset: 0;
             width: 100vw;
@@ -49,13 +49,12 @@
             transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #loading-overlay.fade-out {
+        #loading.fade-out {
             opacity: 0;
             visibility: hidden;
         }
 
-        /* Cards */
-        .card {
+        .loading-card {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -71,7 +70,7 @@
             width: 420px;
         }
 
-        /* Spinner Duplo */
+        /* Spinner Duplo Elegante */
         .spinner-container {
             position: relative;
             width: 60px;
@@ -97,48 +96,38 @@
             animation: spin-reverse 0.7s linear infinite;
         }
 
-        .title {
+        .loading-text {
             margin-top: 1.25rem;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #1e293b;
             font-weight: 600;
+            letter-spacing: -0.01em;
         }
 
-        .subtitle {
-            margin-top: 0.4rem;
-            font-size: 0.875rem;
+        .loading-subtext {
+            margin-top: 0.3rem;
+            font-size: 0.825rem;
             color: #64748b;
             line-height: 1.4;
         }
 
-        /* Estado de Acesso Negado / Bloqueado */
-        #error-card {
-            display: none;
-        }
-
-        .error-icon {
-            width: 56px;
-            height: 56px;
-            color: #ef4444;
-            margin-bottom: 0.25rem;
-        }
-
-        .btn-action {
-            margin-top: 1.5rem;
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+        /* Link de escape caso ocorra o bloqueio do X-Frame-Options */
+        .fallback-container {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
             width: 100%;
         }
 
-        .btn-action:hover {
-            background: #1d4ed8;
+        .fallback-link {
+            font-size: 0.8rem;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .fallback-link:hover {
+            text-decoration: underline;
         }
 
         @keyframes spin {
@@ -155,26 +144,20 @@
 
 <body>
 
-<div id="loading-overlay">
-    <!-- Card de Carregamento -->
-    <div class="card" id="loading-card">
+<div id="loading">
+    <div class="loading-card">
         <div class="spinner-container">
             <div class="spinner"></div>
         </div>
-        <div class="title">Carregando sistema</div>
-        <div class="subtitle">Isso pode levar alguns segundos...</div>
-    </div>
-
-    <!-- Card de Acesso Negado / Bloqueado -->
-    <div class="card" id="error-card">
-        <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-        </svg>
-        <div class="title" style="color: #dc2626;">Acesso Negado ou Bloqueado</div>
-        <div class="subtitle">Você não possui permissão para acessar este sistema ou sua sessão institucional expirou.</div>
-        <a href="https://script.google.com/a/macros/ufma.br/s/AKfycby0mDryV6jk-Fa8o28976mu6S6hM9do7xICgoBjwLNvPPCIAg8nqH8hA4xDfZMOXpuj/exec" target="_blank" class="btn-action">
-            Entrar com Conta UFMA / Abrir Sistema
-        </a>
+        <div class="loading-text">Carregando sistema</div>
+        <div class="loading-subtext">Isso pode levar alguns segundos na primeira inicialização...</div>
+        
+        <div class="fallback-container">
+            <div class="loading-subtext" style="margin-bottom: 6px;">Se a tela não carregar ou bloquear:</div>
+            <a href="https://script.google.com/a/macros/ufma.br/s/AKfycby0mDryV6jk-Fa8o28976mu6S6hM9do7xICgoBjwLNvPPCIAg8nqH8hA4xDfZMOXpuj/exec" target="_blank" class="fallback-link">
+                Abrir sistema diretamente em nova aba &rarr;
+            </a>
+        </div>
     </div>
 </div>
 
@@ -186,40 +169,28 @@
 
 <script>
     const frame = document.getElementById("appFrame");
-    const overlay = document.getElementById("loading-overlay");
-    const loadingCard = document.getElementById("loading-card");
-    const errorCard = document.getElementById("error-card");
+    const loading = document.getElementById("loading");
 
-    let isAppLoaded = false;
+    let loadingHidden = false;
 
-    // 1. Ouve o sinal de sucesso enviado pelo Google Apps Script
-    window.addEventListener("message", (event) => {
-        if (event.data === "APP_LOADED_SUCCESS") {
-            isAppLoaded = true;
-            hideOverlay();
-        }
-    });
+    function hideLoading() {
+        if (loadingHidden) return;
 
-    // 2. Timeout de controle (8 segundos): Se o script do Google recusar a exibição ou barrar 
-    // por falta de acesso, a mensagem de "Acesso Negado ou Bloqueado" é exibida de forma limpa.
-    const timeoutId = setTimeout(() => {
-        if (!isAppLoaded) {
-            showAccessDenied();
-        }
-    }, 1000);
+        loadingHidden = true;
+        loading.classList.add("fade-out");
 
-    function hideOverlay() {
-        clearTimeout(timeoutId);
-        overlay.classList.add("fade-out");
         setTimeout(() => {
-            if(overlay.parentNode) overlay.remove();
+            if(loading.parentNode) {
+                loading.remove();
+            }
         }, 500);
     }
 
-    function showAccessDenied() {
-        loadingCard.style.display = "none";
-        errorCard.style.display = "flex";
-    }
+    // Oculta o loading assim que o iframe terminar de carregar com sucesso
+    frame.addEventListener("load", hideLoading);
+
+    // Timeout de segurança estendido para evitar falsos travamentos em conexões lentas (25 segundos)
+    setTimeout(hideLoading, 25000);
 </script>
 
 </body>
