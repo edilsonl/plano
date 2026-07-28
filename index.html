@@ -206,14 +206,14 @@
         if (!isAppLoaded) {
             showAccessDenied();
         }
-    }, 18000);
+    }, 1000);
 
     function hideOverlay() {
         clearTimeout(timeoutId);
         overlay.classList.add("fade-out");
         setTimeout(() => {
             if(overlay.parentNode) overlay.remove();
-        }, 1500);
+        }, 500);
     }
 
     function showAccessDenied() {
