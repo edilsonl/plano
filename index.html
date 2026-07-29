@@ -34,7 +34,7 @@
             border: 0;
         }
 
-        /* Overlay Principal */
+        /* Overlay Principal - Ele nunca some se der erro, escondendo a tela feia do navegador */
         #loading-overlay {
             position: fixed;
             inset: 0;
@@ -111,7 +111,7 @@
             line-height: 1.4;
         }
 
-        /* Card de Acesso Negado / Bloqueado */
+        /* Card de Acesso Negado / Seleção de Conta */
         #error-card {
             display: none;
         }
@@ -119,7 +119,7 @@
         .error-icon {
             width: 56px;
             height: 56px;
-            color: #ef4444;
+            color: #2563eb;
             margin-bottom: 0.25rem;
         }
 
@@ -141,15 +141,8 @@
             background: #1d4ed8;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes spin-reverse {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(-360deg); }
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
     </style>
 </head>
 
@@ -162,18 +155,20 @@
             <div class="spinner"></div>
         </div>
         <div class="title">Carregando sistema</div>
-        <div class="subtitle">Isso pode levar alguns segundos...</div>
+        <div class="subtitle">Verificando credenciais institucionais...</div>
     </div>
 
-    <!-- Card de Acesso Negado ou Bloqueado (Substitui a mensagem técnica do navegador) -->
+    <!-- Card de Autenticação / Escolha de Perfil -->
     <div class="card" id="error-card">
         <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
         </svg>
-        <div class="title" style="color: #dc2626;">Acesso Negado ou Bloqueado</div>
-        <div class="subtitle">Você não possui permissão para acessar este sistema ou sua sessão institucional expirou.</div>
-        <a href="https://script.google.com/a/macros/ufma.br/s/AKfycbyK1rpxo6qIT8qk9M7zZ0XW1oqB-nw7NGo1GM-wE-AZNy_6V-VoOSg8e9UuFeih6-U/exec" target="_blank" class="btn-action">
-            Entrar com Conta UFMA / Abrir Sistema
+        <div class="title">Selecione seu Perfil</div>
+        <div class="subtitle">O sistema detectou um bloqueio de acesso. Clique abaixo para escolher sua conta institucional (@ufma.br).</div>
+        
+        <!-- O Segredo: URL do AccountChooser apontando para o seu Script -->
+        <a href="https://accounts.google.com/AccountChooser?continue=https://script.google.com/a/macros/ufma.br/s/AKfycbyK1rpxo6qIT8qk9M7zZ0XW1oqB-nw7NGo1GM-wE-AZNy_6V-VoOSg8e9UuFeih6-U/exec" target="_blank" class="btn-action">
+            Escolher Conta UFMA
         </a>
     </div>
 </div>
@@ -190,25 +185,38 @@
     const loadingCard = document.getElementById("loading-card");
     const errorCard = document.getElementById("error-card");
 
-    let isLoaded = false;
+    let isAppLoaded = false;
 
-    // Se o iframe carregar com sucesso, removemos o overlay
-    frame.addEventListener("load", () => {
-        isLoaded = true;
-        overlay.classList.add("fade-out");
-        setTimeout(() => {
-            if(overlay.parentNode) overlay.remove();
-        }, 500);
+    // 1. Ouve o sinal de sucesso do Google Apps Script
+    window.addEventListener("message", (event) => {
+        if (event.data === "APP_LOADED_SUCCESS") {
+            isAppLoaded = true;
+            // Só esconde o overlay se o app realmente carregou, garantindo que o 
+            // erro "conexão recusada" do navegador nunca seja visto pelo usuário.
+            overlay.classList.add("fade-out");
+            setTimeout(() => { if(overlay.parentNode) overlay.remove(); }, 500);
+        }
     });
 
-    // Se o Google recusar a conexão (X-Frame-Options / Falha de permissão), 
-    // o iframe falha em inicializar o app corretamente. Acionamos o card de Acesso Negado após 7 segundos.
+    // 2. O evento 'load' do iframe dispara mesmo se o Google bloquear o iframe.
+    // Damos 1.5s de tolerância. Se o 'postMessage' não chegou nesse tempo, 
+    // sabemos com 100% de certeza que o Google barrou o usuário na tela de login.
+    frame.addEventListener("load", () => {
+        setTimeout(() => {
+            if (!isAppLoaded) {
+                loadingCard.style.display = "none";
+                errorCard.style.display = "flex";
+            }
+        }, 1500);
+    });
+
+    // Fallback de segurança se a internet estiver muito lenta
     setTimeout(() => {
-        if (!isLoaded) {
+        if (!isAppLoaded) {
             loadingCard.style.display = "none";
             errorCard.style.display = "flex";
         }
-    }, 7000);
+    }, 15000);
 </script>
 
 </body>
